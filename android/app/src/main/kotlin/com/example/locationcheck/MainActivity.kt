@@ -38,27 +38,30 @@ import android.os.Bundle
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.plugin.common.MethodChannel
 
+
+
 class MainActivity : FlutterActivity() {
+
     private val CHANNEL = "com.example.locationcheck/location"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        MethodChannel(flutterEngine!!.dartExecutor, CHANNEL).setMethodCallHandler { call, result ->
-            when (call.method) {
-                "startBackgroundLocation" -> {
-                    startLocationTracking()
-                    result.success("Location tracking started")
-                }
-                else -> {
-                    result.notImplemented()
+        flutterEngine?.dartExecutor?.let {
+            MethodChannel(it, CHANNEL).setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "startBackgroundLocation" -> {
+                        val locationService = LocationService(applicationContext, flutterEngine!!.dartExecutor.binaryMessenger)
+                        locationService.startLocationTracking()
+                        result.success("Location tracking started")
+                    }
+
+                    else -> {
+                        result.notImplemented()
+                    }
                 }
             }
         }
     }
-
-    private fun startLocationTracking() {
-        val locationService = LocationService(this, flutterEngine!!.dartExecutor)
-        locationService.startLocationTracking()
-    }
 }
+
